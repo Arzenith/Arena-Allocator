@@ -40,6 +40,7 @@ enum TYPE
   PART
 }
 
+//justine was here
 typedef struct node Node;
 struct node 
 {
