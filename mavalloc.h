@@ -34,6 +34,21 @@ enum ALGORITHM
   WORST_FIT
 }; 
 
+enum TYPE
+{
+  HOLE,
+  PART
+}
+
+typedef struct node Node;
+struct node 
+{
+  enum TYPE type;
+  int size;
+  Node* next;
+  Node* prev;
+};
+
 /**
  * @brief Initialize the allocation arena and set the algorithm type
  *
@@ -98,3 +113,6 @@ void mavalloc_free(void *ptr);
  */
 int mavalloc_size( );
 
+void append_node();
+void push_node();
+void insert_node_after();
