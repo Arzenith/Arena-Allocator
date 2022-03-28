@@ -38,7 +38,7 @@ enum TYPE
 {
   HOLE,
   PART
-}
+};
 
 typedef struct node Node;
 struct node 

@@ -25,6 +25,14 @@
 
 int mavalloc_init( size_t size, enum ALGORITHM algorithm )
 {
+  Node *head = malloc(size * sizeof(Node)); 
+
+  //If the allocation fails or the size is less than 0 the function returns -1
+  if((head == NULL) || (size < 0))
+  {
+    return -1;
+  }
+
   return 0;
 }
 
@@ -41,6 +49,7 @@ void * mavalloc_alloc( size_t size )
 
 void mavalloc_free( void * ptr )
 {
+  free(ptr);
   return;
 }
 
