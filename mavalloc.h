@@ -23,6 +23,8 @@
 
 
 #include <stddef.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 #define ALIGN4(s)  (((((s) - 1) >> 2) << 2) + 4)
 
@@ -40,7 +42,6 @@ enum TYPE
   PART
 };
 
-//justine was here
 typedef struct node Node;
 struct node 
 {
