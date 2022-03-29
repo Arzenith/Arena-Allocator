@@ -10,10 +10,11 @@ Node *head;
 
 int mavalloc_init( size_t size, enum ALGORITHM algorithm )
 {
-  head = malloc(size * sizeof(Node)); 
+  size_t requested_size = ALIGN4( size );
+  head = malloc(requested_size * sizeof(Node)); 
 
-  //If the allocation fails or the size is less than 0 the function returns -1
-  if((head == NULL) || (size < 0))
+  //P: If the allocation fails or the size is less than 0 the function returns -1
+  if((head == NULL) || (requested_size < 0))
   {
     return -1;
   }
