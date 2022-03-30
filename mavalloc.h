@@ -36,12 +36,15 @@ enum ALGORITHM
   WORST_FIT
 }; 
 
+//J: Used for each entry in the linked list
+//J: Hole (H) Part (P) - Process allocation
 enum TYPE
 {
   HOLE,
   PART
 };
 
+//J: [Start Address] [Length] [Pointer to next Item] [Pointer to Prev.]
 typedef struct node Node;
 struct node 
 {

@@ -7,11 +7,13 @@
 
 Node *head;
 
-
+//J: [size] - large memory pool allocation on application startup
+//J: [ALGORITHM] - First Fit, Best Fit, Worst Fit, Next Fit
 int mavalloc_init( size_t size, enum ALGORITHM algorithm )
 {
+ 
   size_t requested_size = ALIGN4( size );
-  head = malloc(requested_size * sizeof(Node)); 
+  head = (Node *) malloc(requested_size * sizeof(Node)); 
 
   //P: If the allocation fails or the size is less than 0 the function returns -1
   if((head == NULL) || (requested_size < 0))
