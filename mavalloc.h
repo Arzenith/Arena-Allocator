@@ -52,6 +52,7 @@ struct node
   int size;
   Node* next;
   Node* prev;
+  enum ALGORITHM algorithm;
 };
 
 /**

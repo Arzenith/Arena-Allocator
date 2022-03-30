@@ -12,12 +12,15 @@ Node *head;
 int mavalloc_init( size_t size, enum ALGORITHM algorithm )
 {
  
+  //P: ALLOCATING ARENA
   size_t requested_size = ALIGN4( size );
   head = (Node *) malloc(requested_size * sizeof(Node)); 
+
   head->type = HOLE;
   head->size = requested_size;
   head->prev = NULL;
   head->next = NULL;
+  head->algorithm = algorithm;
 
   //Write algorithmn here: Based on user
   //First Fit, Best Fit, Worst Fit, Next Fit
@@ -52,6 +55,27 @@ void * mavalloc_alloc( size_t size )
 
   size_t requested_size = ALIGN4(size);
 
+  // FIRST FIT ALGO
+  if(head->algorithm == 0)
+  {
+
+  }
+  // NEXT FIT ALGO
+  else if(head->algorithm == 1)
+  {
+
+  }
+  // BEST FIT ALGO
+  else if(head->algorithm == 2)
+  {
+
+  }
+  // WORST FIT ALGO
+  else
+  {
+    
+  }
+
   //Taking memory from preallocated memory arena
   if(head->size <= 0 || (head->size - requested_size) < 0)
   {
@@ -64,6 +88,7 @@ void * mavalloc_alloc( size_t size )
     temp->next = ptr;
     ptr->prev = temp;
     ptr->next = NULL;
+    ptr->type = PART;
   }
 
   return ptr;
