@@ -11,22 +11,22 @@ Node *head;
 //J: [ALGORITHM] - First Fit, Best Fit, Worst Fit, Next Fit
 int mavalloc_init( size_t size, enum ALGORITHM algorithm )
 {
- 
   //P: ALLOCATING ARENA
   size_t requested_size = ALIGN4( size );
   head = (Node *) malloc(requested_size * sizeof(Node)); 
-
-  head->type = HOLE;
-  head->size = requested_size;
-  head->prev = NULL;
-  head->next = NULL;
-  head->algorithm = algorithm;
 
   //P: If the allocation fails or the size is less than 0 the function returns -1
   if((head == NULL) || (requested_size < 0))
   {
     return -1;
   }
+
+  //P: Setting head characteristics
+  head->type = HOLE;
+  head->size = requested_size;
+  head->next = NULL;
+  head->prev = NULL;
+  head->algorithm = algorithm;
 
   return 0;
 }
@@ -41,59 +41,52 @@ void mavalloc_destroy( )
 //J: [Hole/Process] [Start Number] [Length] [Prev] [Next]
 void * mavalloc_alloc( size_t size )
 {
-  Node *ptr;
   size_t requested_size = ALIGN4(size);
 
-  //Searches the arena for a free block using the heap allocation algo.
-  //Specified when the arean was allocated.
-  //Heap allocation alo. Finds where to allocate memory in linked list
-  Node *temp;
-  
-  // FIRST FIT ALGO
-  if(head->algorithm == 0)
+  Node *new_node, *temp;
+
+  if(head->algorithm == FIRST_FIT)
   {
-    //Finding end of linked list
     temp = head;
     while(temp->next != NULL)
     {
+      if(temp->size >= requested_size)
+      {
+        //J: Temporary Implementation
+        // ptr->size = head->size - requested_size;
+        // temp->next = ptr;
+        // ptr->prev = temp;
+        // ptr->next = NULL;
+        // ptr->type = PART;
+
+       //P: return location of new node
+      }
       temp = temp->next;
     }
   }
-  // NEXT FIT ALGO
-  else if(head->algorithm == 1)
+  else if(head->algorithm == NEXT_FIT)
   {
-
+    //P: return location of new node
   }
-  // BEST FIT ALGO
-  else if(head->algorithm == 2)
+  else if(head->algorithm == BEST_FIT)
   {
-
+    //P: return location of new node
   }
-  // WORST FIT ALGO
-  else
+  else if(head->algorithm == WORST_FIT)
   {
-    
-  }
-
-  //There is no available block of memory the function returns NULL
-  if(head->size <= 0 || (head->size - requested_size) < 0)
-  {
-    //There is no more preallocated memory arena or enough
-    return NULL;
+    //P: return location of new node
   }
   else
   {
-    ptr->size = head->size - requested_size;
-    temp->next = ptr;
-    ptr->prev = temp;
-    ptr->next = NULL;
-    ptr->type = PART;
+    printf("The code should not print this... Something went wrong with the algorithm enum.\n");
   }
 
-  return ptr;
+  //P: COULDN'T FIND SPOT, NO SPACE
+  printf("Couldn't find a spot to fit the request in... Request cannot be met.\n");
+  return NULL;
 }
 
-//Frees the memory block pointed by the pointer.
+//J: Frees the memory block pointed by the pointer.
 void mavalloc_free( void * ptr )
 {
   
