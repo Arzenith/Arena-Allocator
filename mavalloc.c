@@ -22,10 +22,6 @@ int mavalloc_init( size_t size, enum ALGORITHM algorithm )
   head->next = NULL;
   head->algorithm = algorithm;
 
-  //Write algorithmn here: Based on user
-  //First Fit, Best Fit, Worst Fit, Next Fit
-  //After we allocate the memory and place it in its location
-
   //P: If the allocation fails or the size is less than 0 the function returns -1
   if((head == NULL) || (requested_size < 0))
   {
@@ -45,20 +41,23 @@ void mavalloc_destroy( )
 //J: [Hole/Process] [Start Number] [Length] [Prev] [Next]
 void * mavalloc_alloc( size_t size )
 {
-  Node *ptr, *temp;
-  //Finding end of linked list
-  temp = head;
-  while(temp->next != NULL)
-  {
-    temp = temp->next;
-  }
-
+  Node *ptr;
   size_t requested_size = ALIGN4(size);
 
+  //Searches the arena for a free block using the heap allocation algo.
+  //Specified when the arean was allocated.
+  //Heap allocation alo. Finds where to allocate memory in linked list
+  Node *temp;
+  
   // FIRST FIT ALGO
   if(head->algorithm == 0)
   {
-
+    //Finding end of linked list
+    temp = head;
+    while(temp->next != NULL)
+    {
+      temp = temp->next;
+    }
   }
   // NEXT FIT ALGO
   else if(head->algorithm == 1)
@@ -76,10 +75,10 @@ void * mavalloc_alloc( size_t size )
     
   }
 
-  //Taking memory from preallocated memory arena
+  //There is no available block of memory the function returns NULL
   if(head->size <= 0 || (head->size - requested_size) < 0)
   {
-    //J: There is no more preallocated memory arena or enough
+    //There is no more preallocated memory arena or enough
     return NULL;
   }
   else
@@ -94,8 +93,10 @@ void * mavalloc_alloc( size_t size )
   return ptr;
 }
 
+//Frees the memory block pointed by the pointer.
 void mavalloc_free( void * ptr )
 {
+  
   return;
 }
 
