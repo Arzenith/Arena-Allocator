@@ -42,7 +42,6 @@ void mavalloc_destroy( )
 //J: [Hole/Process] [Start Number] [Length] [Prev] [Next]
 void * mavalloc_alloc( size_t size )
 {
-
   Node *ptr, *temp;
   //Finding end of linked list
   temp = head;
