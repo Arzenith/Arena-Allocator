@@ -50,15 +50,17 @@ void * mavalloc_alloc( size_t size )
     temp = temp->next;
   }
 
+  size_t requested_size = ALIGN4(size);
+
   //Taking memory from preallocated memory arena
-  if(head->size <= 0 || (head->size-size) < 0)
+  if(head->size <= 0 || (head->size - requested_size) < 0)
   {
     //J: There is no more preallocated memory arena or enough
     return NULL;
   }
   else
   {
-    ptr->size = head->size-size;
+    ptr->size = head->size - requested_size;
     temp->next = ptr;
     ptr->prev = temp;
     ptr->next = NULL;
