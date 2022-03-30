@@ -40,7 +40,7 @@ enum ALGORITHM
 //J: Hole (H) Part (P) - Process allocation
 enum TYPE
 {
-  HOLE,
+  HOLE = 0,
   PART
 };
 
