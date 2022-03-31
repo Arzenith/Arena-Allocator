@@ -49,7 +49,7 @@ typedef struct node Node;
 struct node 
 {
   enum TYPE type;
-  int size;
+  size_t size;
   Node* next;
   Node* prev;
 };
@@ -118,6 +118,6 @@ void mavalloc_free(void *ptr);
  */
 int mavalloc_size( );
 
-void push_node(int size);
-void insert_node_after(Node *prev_node, int size, enum TYPE type);
+void push_node(size_t size);
+void *insert_node_after(Node *prev_node, size_t size, enum TYPE type);
 void print_dll();
