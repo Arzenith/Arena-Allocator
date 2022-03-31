@@ -66,11 +66,13 @@ void * mavalloc_alloc( size_t size )
       //P: If request is smaller than the size of a hole...
       if(temp->size > requested_size && temp->type == HOLE)
       {
+        //P: Make a HOLE after temp with a size of the remaining memory
         Node *memory_left_over = insert_node_after(temp, temp->size - requested_size, HOLE);
+
+        //P: Make the original HOLE a PART with the size requested
         temp->size = requested_size;
         temp->type = PART;
 
-        printf("new node addy = %p\n", memory_left_over);
         return memory_left_over;
       }
       //P: If requested size is the exact same size as the hole, make the HOLE a PART
@@ -85,15 +87,50 @@ void * mavalloc_alloc( size_t size )
   }
   else if(algorithm_g == NEXT_FIT)
   {
-    //P: return location of new node
+    //P: Return location of new node
   }
   else if(algorithm_g == BEST_FIT)
   {
-    //P: return location of new node
+    //P: Return location of new node
   }
   else if(algorithm_g == WORST_FIT)
   {
-    //P: return location of new node
+    //P: Make another temp variable to hold the locatation of the biggest hole and the biggest size
+    Node *largest_hole;
+    size_t largest_size = 0;
+    
+    temp = head;
+    while(temp != NULL)
+    {
+      //P: If temp has a bigger size than the largest_hole we've seen so far, update largest_hole 
+      if(temp->type == HOLE && temp->size >= largest_size)
+      {
+        largest_size = temp->size;
+        largest_hole = temp;
+      }
+      temp = temp->next;
+    }
+
+    //P: Set temp's address to the largest_hole's address
+    temp = largest_hole;
+
+    //P: If the requested size is the same exact size as the largest size, there's no need to make a new node, make the HOLE a PART
+    if(requested_size == largest_size)
+    {
+      temp->type = PART;
+      print_dll();
+      return temp;
+    }
+
+    //P: Make a HOLE after temp with a size of the remaining memory
+    Node *memory_left_over = insert_node_after(temp, temp->size - requested_size, HOLE);
+
+    //P: Make the original HOLE a PART with the size requested
+    temp->size = requested_size;
+    temp->type = PART;
+
+    print_dll();
+    return memory_left_over;
   }
   else
   {
