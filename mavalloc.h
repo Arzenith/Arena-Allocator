@@ -52,7 +52,6 @@ struct node
   int size;
   Node* next;
   Node* prev;
-  enum ALGORITHM algorithm;
 };
 
 /**
@@ -119,6 +118,6 @@ void mavalloc_free(void *ptr);
  */
 int mavalloc_size( );
 
-void append_node();
-void push_node();
-void insert_node_after();
+void push_node(int size);
+void insert_node_after(Node *prev_node, int size, enum TYPE type);
+void print_dll();

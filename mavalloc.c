@@ -5,7 +5,9 @@
 
 #include "mavalloc.h"
 
+//P: Making these two variables "global" allows ease of access
 Node *head;
+enum ALGORITHM algorithm;
 
 //J: [size] - large memory pool allocation on application startup
 //J: [ALGORITHM] - First Fit, Best Fit, Worst Fit, Next Fit
@@ -26,14 +28,22 @@ int mavalloc_init( size_t size, enum ALGORITHM algorithm )
   head->size = requested_size;
   head->next = NULL;
   head->prev = NULL;
-  head->algorithm = algorithm;
 
   return 0;
 }
 
 void mavalloc_destroy( )
 {
-  free(head);
+  //P: freeing a DLL implementation
+  Node *temp = head;
+  Node *next_node = NULL;
+  while(temp != NULL)
+  {
+    next_node = temp->next;
+    free(temp);
+    temp = next_node;
+  }
+
   return;
 }
 
@@ -43,9 +53,9 @@ void * mavalloc_alloc( size_t size )
 {
   size_t requested_size = ALIGN4(size);
 
-  Node *new_node, *temp;
+  Node *temp;
 
-  if(head->algorithm == FIRST_FIT)
+  if(algorithm == FIRST_FIT)
   {
     temp = head;
     while(temp->next != NULL)
@@ -59,20 +69,20 @@ void * mavalloc_alloc( size_t size )
         // ptr->next = NULL;
         // ptr->type = PART;
 
-       //P: return location of new node
+        //P: return location of new node
       }
       temp = temp->next;
     }
   }
-  else if(head->algorithm == NEXT_FIT)
+  else if(algorithm == NEXT_FIT)
   {
     //P: return location of new node
   }
-  else if(head->algorithm == BEST_FIT)
+  else if(algorithm == BEST_FIT)
   {
     //P: return location of new node
   }
-  else if(head->algorithm == WORST_FIT)
+  else if(algorithm == WORST_FIT)
   {
     //P: return location of new node
   }
@@ -99,4 +109,69 @@ int mavalloc_size( )
   int number_of_nodes = 0;
 
   return number_of_nodes;
+}
+
+//P: When the user mavalloc_alloc(), the new node will be the new head of the list with type "PART"
+void push_node(int size)
+{
+  //P: Create new node and set it's data
+  Node *new_node = malloc(sizeof(Node));
+  new_node->size = size;
+  new_node->type = PART;
+
+  //P: Place the new_node BEFORE the head by setting it's next to the head's position
+  new_node->next = head;
+  new_node->prev = NULL;
+
+  //P: Update location of head to the NEW beginning of the DLL
+  head->prev = new_node;
+  head = new_node;
+}
+
+//P: We will be using this function when needed during any of the 4 algorithms
+void insert_node_after(Node *prev_node, int size, enum TYPE type)
+{
+  if(prev_node == NULL)
+  {
+    printf("ERROR: Prev node is NULL\n");
+    return;
+  }
+
+  //P: Create new node and set it's data
+  Node *new_node = malloc(sizeof(Node));
+  new_node->size = size;
+  new_node->type = type;
+
+  //P: Setting up pointers for new node
+  new_node->next = prev_node->next;
+  prev_node->next = new_node;
+  new_node->prev = prev_node;
+
+  //P: Setting the node FOLLOWING the new_node's previous pointer to the new node to link them up
+  if(new_node->next != NULL)
+  {
+    new_node->next->prev = new_node;
+  }
+}
+
+//P: Made the function for debugging purposes so that we can see what the arena looks like
+void print_dll()
+{
+  Node *temp = head;
+  printf("\nDLL\n------------\n");
+  while(temp != NULL)
+  {
+    //P: If node is of type "HOLE"
+    if(temp->type == 0)
+    {
+      printf("[H | %d] --> ", temp->size);
+    }
+    //P: If node is of type "PART"
+    else
+    {
+      printf("[P | %d] --> ", temp->size);
+    }
+    temp = temp->next;
+  }
+  printf("NULL\n");
 }
