@@ -46,6 +46,7 @@ void mavalloc_destroy( )
     free(temp);
     temp = next_node;
   }
+  head = NULL;
 
   return;
 }
@@ -91,7 +92,35 @@ void * mavalloc_alloc( size_t size )
   }
   else if(algorithm_g == BEST_FIT)
   {
-    //P: Return location of new node
+    //J: Searching entire list of holes to find size greater than or equal to the size of the process
+    temp = head;
+    while(temp != NULL)
+    {
+      //If hole is equal to size of process, place process in hole
+      if(temp->type == HOLE && temp->size == requested_size)
+      {
+        //J: Temp is equal to size of hole, make it Part, no new node
+        temp->type = PART;
+        print_dll();
+        return temp;
+
+      }
+      //J: If hole is larger than process, place process in hole
+      else if(temp->type == HOLE && temp->size > requested_size)
+      {
+        //J: Creating hole from found larger hole
+        //J: Ex: Hole = 20 KB, Part = 10 KB -> New hole = 10 KB
+        Node *new_hole = insert_node_after(temp->prev,temp->size-requested_size,HOLE);
+        
+        //J: Hole becomes process allocation (Part)
+        //J: Size of hole is reduced
+        temp->type = PART;
+        temp->size = temp->size - requested_size;
+
+        return new_hole;
+      }
+    }
+    
   }
   else if(algorithm_g == WORST_FIT)
   {
@@ -142,10 +171,13 @@ void * mavalloc_alloc( size_t size )
   return NULL;
 }
 
-//J: Frees the memory block pointed by the pointer.
+//J: Frees the memory block pointed by pointer back to preallocated memoory arena
+//J: Two consecutive blocks free then combine (coalesce) them
 void mavalloc_free( void * ptr )
 {
-  
+  //J: void pointer is not assocaited w/ any data type
+  //J: It points to some data location in storage means points to the address of variables  ptr->size = malloc();
+
   return;
 }
 
@@ -161,7 +193,7 @@ int mavalloc_size( )
 void push_node(size_t size)
 {
   //P: Create new node and set it's data
-  Node *new_node = malloc(sizeof(Node));
+  Node *new_node = (Node *)malloc(sizeof(Node));
   new_node->size = size;
   new_node->type = PART;
 
@@ -178,7 +210,7 @@ void push_node(size_t size)
 void *insert_node_after(Node *prev_node, size_t size, enum TYPE type)
 {
   //P: Create new node and set it's data
-  Node *new_node = malloc(sizeof(Node));
+  Node *new_node = (Node *)malloc(sizeof(Node));
   new_node->size = size;
   new_node->type = type;
 
