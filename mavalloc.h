@@ -48,6 +48,7 @@ enum TYPE
 typedef struct node Node;
 struct node 
 {
+  void * arena;
   enum TYPE type;
   size_t size;
   Node* next;

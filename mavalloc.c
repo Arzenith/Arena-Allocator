@@ -7,6 +7,7 @@
 
 //P: Making these two variables "global" allows ease of access
 Node *head;
+void *arena;
 enum ALGORITHM algorithm_g;
 
 //J: [size] - large memory pool allocation on application startup
@@ -14,8 +15,9 @@ enum ALGORITHM algorithm_g;
 int mavalloc_init( size_t size, enum ALGORITHM algorithm )
 {
   //P: ALLOCATING ARENA
-  size_t requested_size = ALIGN4( size );
-  head = (Node *) malloc(requested_size * sizeof(Node)); 
+  size_t requested_size = ALIGN4(size);
+  arena = malloc(requested_size);
+  head = (Node *) malloc(sizeof(Node)); 
 
   //P: If the allocation fails or the size is less than 0 the function returns -1
   if((head == NULL) || (requested_size < 0))
@@ -57,7 +59,7 @@ void * mavalloc_alloc( size_t size )
 {
   size_t requested_size = ALIGN4(size);
 
-  Node *temp;
+  Node *temp = NULL;
 
   if(algorithm_g == FIRST_FIT)
   {
@@ -88,7 +90,27 @@ void * mavalloc_alloc( size_t size )
   }
   else if(algorithm_g == NEXT_FIT)
   {
-    //P: Return location of new node
+    //J: Starts from where the process allocation left off
+    //J: [Head] [Recently allocted PART] (stop) [PART] [PART]
+    //J: Will contuine at the 1st node, last left off
+
+    //J: Determining if there was a left off part, no start from head
+    if(temp == NULL)
+    {
+      temp = head;
+      while(temp != NULL)
+      {
+        if(temp->type == HOLE && temp->size > requested_size)
+        {
+          Node *new_hole = insert_node_after(temp->prev,temp->size-requested_size,HOLE);
+          temp->type = PART;
+          temp->size = temp->size-requested_size;
+
+          return new_hole;
+        }
+      }
+    }
+
   }
   else if(algorithm_g == BEST_FIT)
   {
@@ -101,12 +123,13 @@ void * mavalloc_alloc( size_t size )
       {
         //J: Temp is equal to size of hole, make it Part, no new node
         temp->type = PART;
-        print_dll();
         return temp;
 
       }
-      //J: If hole is larger than process, place process in hole
-      else if(temp->type == HOLE && temp->size > requested_size)
+      
+      //J: Finding smallest free partition/hole that is big enough
+      //J: and meets the requirements of the process, becomes PART
+      if(temp->type == HOLE && temp->size > requested_size)
       {
         //J: Creating hole from found larger hole
         //J: Ex: Hole = 20 KB, Part = 10 KB -> New hole = 10 KB
@@ -116,7 +139,6 @@ void * mavalloc_alloc( size_t size )
         //J: Size of hole is reduced
         temp->type = PART;
         temp->size = temp->size - requested_size;
-
         return new_hole;
       }
     }
@@ -171,12 +193,22 @@ void * mavalloc_alloc( size_t size )
   return NULL;
 }
 
-//J: Frees the memory block pointed by pointer back to preallocated memoory arena
+//J: Frees the memory block pointed by pointer back to preallocated memory arena
 //J: Two consecutive blocks free then combine (coalesce) them
 void mavalloc_free( void * ptr )
 {
-  //J: void pointer is not assocaited w/ any data type
-  //J: It points to some data location in storage means points to the address of variables  ptr->size = malloc();
+  //J: Searching through list to find similar ptr allocation size
+  Node *temp = head;
+  while(temp)
+  {
+    if(temp->arena == ptr)
+    {
+      //J: Changing PART to HOLE -> freeing memory
+      temp->type = HOLE;
+      break;
+    }
+    temp = temp->next;
+  }
 
   return;
 }
@@ -185,6 +217,12 @@ void mavalloc_free( void * ptr )
 int mavalloc_size( )
 {
   int number_of_nodes = 0;
+  Node *temp = head;
+  while(temp)
+  {
+    number_of_nodes++;
+    temp = temp->next;
+  }
 
   return number_of_nodes;
 }
