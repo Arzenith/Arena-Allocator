@@ -16,7 +16,7 @@ int mavalloc_init( size_t size, enum ALGORITHM algorithm )
 {
   //P: ALLOCATING ARENA
   size_t requested_size = ALIGN4(size);
-  arena = malloc(requested_size);
+  arena = malloc(ALIGN4(size));
   head = (Node *) malloc(sizeof(Node)); 
 
   //P: If the allocation fails or the size is less than 0 the function returns -1
@@ -60,7 +60,7 @@ void * mavalloc_alloc( size_t size )
 {
   size_t requested_size = ALIGN4(size);
 
-  Node *temp = NULL;
+  Node *temp;
 
   if(algorithm_g == FIRST_FIT)
   {
@@ -208,7 +208,15 @@ void mavalloc_free( void * ptr )
       //J: Changing PART to HOLE -> freeing memory
       temp->type = HOLE;
 
-      //J: Combining two consecutive blocks free
+      //J: Combining two consecutive blocks free (PREV)
+      if(temp->prev->type == HOLE)
+      {
+        //J:[prev_hole = 0 or -1] [HOLE = new_hole + next_hole]
+        temp->size = temp->size+temp->prev->size;
+        temp->prev->size = 0;
+      }
+
+      //J: Combining two consecutive blocks free (NEXT)
       if(temp->next->type == HOLE)
       {
         //J:[HOLE = new_hole + next_hole] [next_hole = 0 or -1]
