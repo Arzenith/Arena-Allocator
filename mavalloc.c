@@ -5,7 +5,7 @@
 
 #include "mavalloc.h"
 
-//P: Making these two variables "global" allows ease of access
+//P: Making these three variables "global" allows ease of access
 Node *head;
 void *arena;
 enum ALGORITHM algorithm_g;
@@ -26,6 +26,7 @@ int mavalloc_init( size_t size, enum ALGORITHM algorithm )
   }
 
   //P: Setting head characteristics
+  head->arena = arena;
   head->type = HOLE;
   head->size = requested_size;
   head->next = NULL;
@@ -201,12 +202,23 @@ void mavalloc_free( void * ptr )
   Node *temp = head;
   while(temp)
   {
-    if(temp->arena == ptr)
+    //J:temp->type == PART deals with "double free detected"
+    if(temp->arena == ptr && temp->type == PART)
     {
       //J: Changing PART to HOLE -> freeing memory
       temp->type = HOLE;
+
+      //J: Combining two consecutive blocks free
+      if(temp->next->type == HOLE)
+      {
+        //J:[HOLE = new_hole + next_hole] [next_hole = 0 or -1]
+        temp->size = temp->size+temp->next->size;
+        temp->next->size = 0;
+      }
+
       break;
     }
+    //J: Searching though list to find similar ptr
     temp = temp->next;
   }
 
