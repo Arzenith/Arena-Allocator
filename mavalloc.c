@@ -10,6 +10,7 @@ Node *head;
 Node *temp = NULL;
 void *arena;
 enum ALGORITHM algorithm_g;
+Node *previous = NULL;
 
 //J: [size] - large memory pool allocation on application startup
 //J: [ALGORITHM] - First Fit, Best Fit, Worst Fit, Next Fit
@@ -88,72 +89,155 @@ void * mavalloc_alloc( size_t size )
   }
   else if(algorithm_g == NEXT_FIT)
   {
-    //J: Start from head if there is no next pointer left off
-    if(temp == NULL)
-      temp = head;
+    //J: JUSTINES IMPLEMENTATION
+    // //J: Start from head if there is no next pointer left off
+    // if(temp == NULL)
+    //   temp = head;
 
-    //J: Assuming there was a left of part
-    Node *temp_ptr = temp;
-    while(temp_ptr)
+    // //J: Assuming there was a left of part
+    // Node *temp_ptr = temp;
+    // while(temp_ptr)
+    // {
+    //   //J: Similar to FIRST_FIT Excepts starts at PART left off
+    //   if(temp_ptr->size > requested_size && temp_ptr->type == HOLE)
+    //   {
+    //     temp = temp_ptr;
+    //     Node *memory_left_over = insert_node_after(temp,temp->size - requested_size,HOLE);
+    //     temp->size = requested_size;
+    //     temp->type = PART;
+
+    //     return (void *) memory_left_over->arena;
+    //   }
+
+    //   if(temp_ptr->size == requested_size)
+    //   {
+    //     temp = temp_ptr;
+    //     temp->type = PART;
+    //     return (void *) temp->arena;
+    //   }
+
+    //   temp_ptr = temp_ptr->next;
+    //   //J: Coming back to where we started
+    //   if(temp_ptr == temp)
+    //     break;
+    //   //J: We have reached the head
+    //   if(temp_ptr == head)
+    //     temp_ptr = head;
+    // }
+
+    //////////////////////////////////////////////////////////////
+    //P: PATRICKS IMPLEMENTATION
+    if(previous == NULL)
     {
-      //J: Similar to FIRST_FIT Excepts starts at PART left off
-      if(temp_ptr->size > requested_size && temp_ptr->type == HOLE)
+      previous = head;
+    }
+
+    temp = previous;
+    while(temp != NULL)
+    {
+      //P: If request is smaller than the size of a hole...
+      if(temp->size > requested_size && temp->type == HOLE)
       {
-        temp = temp_ptr;
-        Node *memory_left_over = insert_node_after(temp,temp->size - requested_size,HOLE);
+        //P: Make a HOLE after temp with a size of the remaining memory
+        Node *memory_left_over = insert_node_after(temp, temp->size - requested_size, HOLE);
+
+        //P: Make the original HOLE a PART with the size requested
         temp->size = requested_size;
         temp->type = PART;
 
+        print_dll();
         return (void *) memory_left_over->arena;
       }
-
-      if(temp_ptr->size == requested_size)
+      //P: If requested size is the exact same size as the hole, make the HOLE a PART
+      if(temp->size == requested_size)
       {
-        temp = temp_ptr;
         temp->type = PART;
+        print_dll();
         return (void *) temp->arena;
       }
 
-      temp_ptr = temp_ptr->next;
-      //J: Coming back to where we started
-      if(temp_ptr == temp)
+      temp = temp->next;
+      //P: Check if you've gone through the entire array
+      if(temp == previous)
+      {
         break;
-      //J: We have reached the head
-      if(temp_ptr == head)
-        temp_ptr = head;
+      }
+      //P: If you've made it to the end of the linked list, start back at the beginning
+      if(temp == NULL)
+      {
+        temp = head;
+      }
     }
   }
   else if(algorithm_g == BEST_FIT)
   {
-    //J: Searching entire list of holes to find size greater than or equal to the size of the process
+    // //J: Searching entire list of holes to find size greater than or equal to the size of the process
+    // temp = head;
+    // while(temp != NULL)
+    // {
+    //   //If hole is equal to size of process, place process in hole
+    //   if(temp->type == HOLE && temp->size == requested_size)
+    //   {
+    //     //J: Temp is equal to size of hole, make it Part, no new node
+    //     temp->type = PART;
+    //     return temp;
+
+    //   }
+      
+    //   //J: Finding smallest free partition/hole that is big enough
+    //   //J: and meets the requirements of the process, becomes PART
+    //   if(temp->type == HOLE && temp->size > requested_size)
+    //   {
+    //     //J: Creating hole from smallest free hole
+    //     //J: Ex: Hole = 20 KB, Part = 10 KB -> New hole = 10 KB
+    //     Node *new_hole = insert_node_after(temp->prev,temp->size-requested_size,HOLE);
+        
+    //     //J: Hole becomes process allocation (Part)
+    //     //J: Size of hole is reduced
+    //     temp->type = PART;
+    //     temp->size = temp->size - requested_size;
+    //     return new_hole;
+    //   }
+    //   temp = temp->next;
+    // }
+
+    //////////////////////////////////////////////////////////////
+    //P: PATRICKS IMPLEMENTATION
+    Node *smallest_hole;
+    size_t smallest_size = INT_MAX;
+    
     temp = head;
     while(temp != NULL)
     {
-      //If hole is equal to size of process, place process in hole
-      if(temp->type == HOLE && temp->size == requested_size)
+      //P: If temp has a bigger size than the largest_hole we've seen so far, update largest_hole 
+      if(temp->type == HOLE && temp->size <= smallest_size)
       {
-        //J: Temp is equal to size of hole, make it Part, no new node
-        temp->type = PART;
-        return temp;
-
-      }
-      
-      //J: Finding smallest free partition/hole that is big enough
-      //J: and meets the requirements of the process, becomes PART
-      if(temp->type == HOLE && temp->size > requested_size)
-      {
-        //J: Creating hole from smallest free hole
-        //J: Ex: Hole = 20 KB, Part = 10 KB -> New hole = 10 KB
-        Node *new_hole = insert_node_after(temp->prev,temp->size-requested_size,HOLE);
-        
-        //J: Hole becomes process allocation (Part)
-        //J: Size of hole is reduced
-        temp->type = PART;
-        temp->size = temp->size - requested_size;
-        return new_hole;
+        smallest_size = temp->size;
+        smallest_hole = temp;
       }
       temp = temp->next;
-    }   
+    }
+
+    //P: Set temp's address to the largest_hole's address
+    temp = smallest_hole;
+
+    //P: If the requested size is the same exact size as the largest size, there's no need to make a new node, make the HOLE a PART
+    if(requested_size == smallest_size)
+    {
+      temp->type = PART;
+      print_dll();
+      return (void *) temp->arena;
+    }
+
+    //P: Make a HOLE after temp with a size of the remaining memory
+    Node *memory_left_over = insert_node_after(temp, temp->size - requested_size, HOLE);
+
+    //P: Make the original HOLE a PART with the size requested
+    temp->size = requested_size;
+    temp->type = PART;
+
+    print_dll();
+    return (void *) memory_left_over->arena;
   }
   else if(algorithm_g == WORST_FIT)
   {
@@ -201,7 +285,7 @@ void * mavalloc_alloc( size_t size )
 
   //P: COULDN'T FIND SPOT, NO SPACE
   printf("Couldn't find a spot to fit the request in... Request cannot be met.\n");
-  return NULL;
+  return NULL;  
 }
 
 //J: Frees the memory block pointed by pointer back to preallocated memory arena

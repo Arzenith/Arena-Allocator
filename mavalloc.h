@@ -25,6 +25,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <limits.h>
 
 #define ALIGN4(s)  (((((s) - 1) >> 2) << 2) + 4)
 
