@@ -7,6 +7,7 @@
 
 //P: Making these three variables "global" allows ease of access
 Node *head;
+Node *temp = NULL;
 void *arena;
 enum ALGORITHM algorithm_g;
 
@@ -16,7 +17,7 @@ int mavalloc_init( size_t size, enum ALGORITHM algorithm )
 {
   //P: ALLOCATING ARENA
   size_t requested_size = ALIGN4(size);
-  arena = malloc(ALIGN4(size));
+  arena = malloc(requested_size);
   head = (Node *) malloc(sizeof(Node)); 
 
   //P: If the allocation fails or the size is less than 0 the function returns -1
@@ -60,12 +61,10 @@ void * mavalloc_alloc( size_t size )
 {
   size_t requested_size = ALIGN4(size);
 
-  Node *temp;
-
   if(algorithm_g == FIRST_FIT)
   {
     temp = head;
-    while(temp != NULL)
+    while(temp)
     {
       //P: If request is smaller than the size of a hole...
       if(temp->size > requested_size && temp->type == HOLE)
@@ -76,42 +75,53 @@ void * mavalloc_alloc( size_t size )
         //P: Make the original HOLE a PART with the size requested
         temp->size = requested_size;
         temp->type = PART;
-
-        return memory_left_over;
+        return (void *) memory_left_over->arena;
       }
       //P: If requested size is the exact same size as the hole, make the HOLE a PART
       if(temp->size == requested_size)
       {
         temp->type = PART;
-        return temp;
+        return (void *) temp->arena;
       }
-
       temp = temp->next;
     }
   }
   else if(algorithm_g == NEXT_FIT)
   {
-    //J: Starts from where the process allocation left off
-    //J: [Head] [Recently allocted PART] (stop) [PART] [PART]
-    //J: Will contuine at the 1st node, last left off
-
-    //J: Determining if there was a left off part, no start from head
+    //J: Start from head if there is no next pointer left off
     if(temp == NULL)
-    {
       temp = head;
-      while(temp != NULL)
+
+    //J: Assuming there was a left of part
+    Node *temp_ptr = temp;
+    while(temp_ptr)
+    {
+      //J: Similar to FIRST_FIT Excepts starts at PART left off
+      if(temp_ptr->size > requested_size && temp_ptr->type == HOLE)
       {
-        if(temp->type == HOLE && temp->size > requested_size)
-        {
-          Node *new_hole = insert_node_after(temp->prev,temp->size-requested_size,HOLE);
-          temp->type = PART;
-          temp->size = temp->size-requested_size;
+        temp = temp_ptr;
+        Node *memory_left_over = insert_node_after(temp,temp->size - requested_size,HOLE);
+        temp->size = requested_size;
+        temp->type = PART;
 
-          return new_hole;
-        }
+        return (void *) memory_left_over->arena;
       }
-    }
 
+      if(temp_ptr->size == requested_size)
+      {
+        temp = temp_ptr;
+        temp->type = PART;
+        return (void *) temp->arena;
+      }
+
+      temp_ptr = temp_ptr->next;
+      //J: Coming back to where we started
+      if(temp_ptr == temp)
+        break;
+      //J: We have reached the head
+      if(temp_ptr == head)
+        temp_ptr = head;
+    }
   }
   else if(algorithm_g == BEST_FIT)
   {
@@ -132,7 +142,7 @@ void * mavalloc_alloc( size_t size )
       //J: and meets the requirements of the process, becomes PART
       if(temp->type == HOLE && temp->size > requested_size)
       {
-        //J: Creating hole from found larger hole
+        //J: Creating hole from smallest free hole
         //J: Ex: Hole = 20 KB, Part = 10 KB -> New hole = 10 KB
         Node *new_hole = insert_node_after(temp->prev,temp->size-requested_size,HOLE);
         
@@ -142,8 +152,8 @@ void * mavalloc_alloc( size_t size )
         temp->size = temp->size - requested_size;
         return new_hole;
       }
-    }
-    
+      temp = temp->next;
+    }   
   }
   else if(algorithm_g == WORST_FIT)
   {
@@ -171,7 +181,7 @@ void * mavalloc_alloc( size_t size )
     {
       temp->type = PART;
       print_dll();
-      return temp;
+      return (void *) temp->arena;
     }
 
     //P: Make a HOLE after temp with a size of the remaining memory
@@ -182,7 +192,7 @@ void * mavalloc_alloc( size_t size )
     temp->type = PART;
 
     print_dll();
-    return memory_left_over;
+    return (void *) memory_left_over->arena;
   }
   else
   {
@@ -223,13 +233,12 @@ void mavalloc_free( void * ptr )
         temp->size = temp->size+temp->next->size;
         temp->next->size = 0;
       }
-
+      
       break;
     }
     //J: Searching though list to find similar ptr
     temp = temp->next;
   }
-
   return;
 }
 
@@ -269,6 +278,8 @@ void *insert_node_after(Node *prev_node, size_t size, enum TYPE type)
 {
   //P: Create new node and set it's data
   Node *new_node = (Node *)malloc(sizeof(Node));
+  //J: Placing leftover arena into new_node
+  new_node->arena = prev_node->arena+size;
   new_node->size = size;
   new_node->type = type;
 

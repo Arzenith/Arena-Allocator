@@ -287,4 +287,3 @@ void Suite##suiteName(TinyTestRegistry* registry)                       \
 #endif // TINYTEST_NOTESTING
 
 #endif
-
