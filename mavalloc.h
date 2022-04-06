@@ -120,6 +120,5 @@ void mavalloc_free(void *ptr);
  */
 int mavalloc_size( );
 
-void push_node(size_t size);
 void *insert_node_after(Node *prev_node, size_t size, enum TYPE type);
 void print_dll();

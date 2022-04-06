@@ -675,7 +675,7 @@ TINYTEST_START_SUITE(MavAllocTestSuite);
   // TINYTEST_ADD_TEST(test_case_17,tinytest_setup,tinytest_teardown);
   // TINYTEST_ADD_TEST(test_case_18,tinytest_setup,tinytest_teardown);
   // TINYTEST_ADD_TEST(test_case_19,tinytest_setup,tinytest_teardown);
-  // TINYTEST_ADD_TEST(test_case_20,tinytest_setup,tinytest_teardown);
+  TINYTEST_ADD_TEST(test_case_20,tinytest_setup,tinytest_teardown);
 TINYTEST_END_SUITE();
 
 TINYTEST_MAIN_SINGLE_SUITE(MavAllocTestSuite);

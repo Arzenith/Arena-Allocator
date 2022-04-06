@@ -227,21 +227,30 @@ void mavalloc_free( void * ptr )
       temp->type = HOLE;
 
       //J: Combining two consecutive blocks free (PREV)
-      if(temp->prev->type == HOLE)
+      Node *temp_prev = temp->prev;
+      if(temp_prev->type == HOLE)
       {
         //J:[prev_hole = 0 or -1] [HOLE = new_hole + next_hole]
-        temp->size = temp->size+temp->prev->size;
+        temp->size = temp->size+temp_prev->size;
+
+        //J: Updating arena
+        temp->arena = temp->arena+temp_prev->size;
+
         temp->prev->size = 0;
       }
 
       //J: Combining two consecutive blocks free (NEXT)
-      if(temp->next->type == HOLE)
+      Node *temp_next = temp->next;
+      if(temp_next->type == HOLE)
       {
-        //J:[HOLE = new_hole + next_hole] [next_hole = 0 or -1]
-        temp->size = temp->size+temp->next->size;
+        // //J:[HOLE = new_hole + next_hole] [next_hole = 0 or -1]
+        temp->size = temp->size+temp_next->size;
+
+        //J: Updating arena
+        temp->arena = temp->arena+temp_prev->size;      
+
         temp->next->size = 0;
-      }
-      
+      }      
       break;
     }
     //J: Searching though list to find similar ptr
@@ -262,23 +271,6 @@ int mavalloc_size( )
   }
 
   return number_of_nodes;
-}
-
-//P: When the user mavalloc_alloc(), the new node will be the new head of the list with type "PART"
-void push_node(size_t size)
-{
-  //P: Create new node and set it's data
-  Node *new_node = (Node *)malloc(sizeof(Node));
-  new_node->size = size;
-  new_node->type = PART;
-
-  //P: Place the new_node BEFORE the head by setting it's next to the head's position
-  new_node->next = head;
-  new_node->prev = NULL;
-
-  //P: Update location of head to the NEW beginning of the DLL
-  head->prev = new_node;
-  head = new_node;
 }
 
 //P: We will be using this function when needed during any of the 4 algorithms
