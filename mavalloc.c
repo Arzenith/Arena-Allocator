@@ -8,9 +8,9 @@
 //P: Making these three variables "global" allows ease of access
 Node *head;
 Node *temp = NULL;
+Node *previous = NULL;
 void *arena;
 enum ALGORITHM algorithm_g;
-Node *previous = NULL;
 
 //J: [size] - large memory pool allocation on application startup
 //J: [ALGORITHM] - First Fit, Best Fit, Worst Fit, Next Fit
@@ -89,84 +89,40 @@ void * mavalloc_alloc( size_t size )
   }
   else if(algorithm_g == NEXT_FIT)
   {
-    //J: JUSTINES IMPLEMENTATION
-    // //J: Start from head if there is no next pointer left off
-    // if(temp == NULL)
-    //   temp = head;
-
-    // //J: Assuming there was a left of part
-    // Node *temp_ptr = temp;
-    // while(temp_ptr)
-    // {
-    //   //J: Similar to FIRST_FIT Excepts starts at PART left off
-    //   if(temp_ptr->size > requested_size && temp_ptr->type == HOLE)
-    //   {
-    //     temp = temp_ptr;
-    //     Node *memory_left_over = insert_node_after(temp,temp->size - requested_size,HOLE);
-    //     temp->size = requested_size;
-    //     temp->type = PART;
-
-    //     return (void *) memory_left_over->arena;
-    //   }
-
-    //   if(temp_ptr->size == requested_size)
-    //   {
-    //     temp = temp_ptr;
-    //     temp->type = PART;
-    //     return (void *) temp->arena;
-    //   }
-
-    //   temp_ptr = temp_ptr->next;
-    //   //J: Coming back to where we started
-    //   if(temp_ptr == temp)
-    //     break;
-    //   //J: We have reached the head
-    //   if(temp_ptr == head)
-    //     temp_ptr = head;
-    // }
-
-    //////////////////////////////////////////////////////////////
-    //P: PATRICKS IMPLEMENTATION
+    //J: Start from head if there is no next pointer left off
     if(previous == NULL)
-    {
       previous = head;
-    }
 
-    temp = previous;
-    while(temp != NULL)
+    //J: Assuming there was a left of part
+    Node *temp_ptr = previous;
+    while(temp_ptr)
     {
-      //P: If request is smaller than the size of a hole...
-      if(temp->size > requested_size && temp->type == HOLE)
+      //J: Similar to FIRST_FIT Excepts starts at PART left off
+      if(temp_ptr->size > requested_size && temp_ptr->type == HOLE)
       {
-        //P: Make a HOLE after temp with a size of the remaining memory
-        Node *memory_left_over = insert_node_after(temp, temp->size - requested_size, HOLE);
-
-        //P: Make the original HOLE a PART with the size requested
+        temp = temp_ptr;
+        Node *memory_left_over = insert_node_after(temp,temp->size - requested_size,HOLE);
         temp->size = requested_size;
         temp->type = PART;
 
-        print_dll();
         return (void *) memory_left_over->arena;
       }
-      //P: If requested size is the exact same size as the hole, make the HOLE a PART
-      if(temp->size == requested_size)
+
+      //J: If pointer allocator is the same size as the HOLE
+      if(temp_ptr->size == requested_size && temp_ptr->type == HOLE)
       {
+        temp = temp_ptr;
         temp->type = PART;
-        print_dll();
         return (void *) temp->arena;
       }
 
-      temp = temp->next;
-      //P: Check if you've gone through the entire array
-      if(temp == previous)
-      {
+      temp_ptr = temp_ptr->next;
+      //J: Coming back to where we started
+      if(temp_ptr == previous)
         break;
-      }
-      //P: If you've made it to the end of the linked list, start back at the beginning
-      if(temp == NULL)
-      {
-        temp = head;
-      }
+      //J: We have reached the head
+      if(temp_ptr == NULL)
+        temp_ptr = head;
     }
   }
   else if(algorithm_g == BEST_FIT)
@@ -186,7 +142,7 @@ void * mavalloc_alloc( size_t size )
       
     //   //J: Finding smallest free partition/hole that is big enough
     //   //J: and meets the requirements of the process, becomes PART
-    //   if(temp->type == HOLE && temp->size > requested_size)
+    //   if(temp->type == HOLE && temp->size <= requested_size)
     //   {
     //     //J: Creating hole from smallest free hole
     //     //J: Ex: Hole = 20 KB, Part = 10 KB -> New hole = 10 KB
