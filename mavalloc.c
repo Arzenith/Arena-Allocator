@@ -127,38 +127,6 @@ void * mavalloc_alloc( size_t size )
   }
   else if(algorithm_g == BEST_FIT)
   {
-    // //J: Searching entire list of holes to find size greater than or equal to the size of the process
-    // temp = head;
-    // while(temp != NULL)
-    // {
-    //   //If hole is equal to size of process, place process in hole
-    //   if(temp->type == HOLE && temp->size == requested_size)
-    //   {
-    //     //J: Temp is equal to size of hole, make it Part, no new node
-    //     temp->type = PART;
-    //     return temp;
-
-    //   }
-      
-    //   //J: Finding smallest free partition/hole that is big enough
-    //   //J: and meets the requirements of the process, becomes PART
-    //   if(temp->type == HOLE && temp->size <= requested_size)
-    //   {
-    //     //J: Creating hole from smallest free hole
-    //     //J: Ex: Hole = 20 KB, Part = 10 KB -> New hole = 10 KB
-    //     Node *new_hole = insert_node_after(temp->prev,temp->size-requested_size,HOLE);
-        
-    //     //J: Hole becomes process allocation (Part)
-    //     //J: Size of hole is reduced
-    //     temp->type = PART;
-    //     temp->size = temp->size - requested_size;
-    //     return new_hole;
-    //   }
-    //   temp = temp->next;
-    // }
-
-    //////////////////////////////////////////////////////////////
-    //P: PATRICKS IMPLEMENTATION
     Node *smallest_hole;
     size_t smallest_size = INT_MAX;
     
