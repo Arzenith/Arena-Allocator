@@ -216,38 +216,46 @@ void * mavalloc_alloc( size_t size )
 //J: Two consecutive blocks free then combine (coalesce) them
 void mavalloc_free( void * ptr )
 {
-  Node * node = head;
-  while( node )
+  //J: Searching through list to find similar ptr allocation size
+  Node *temp = head;
+  while(temp)
   {
-    if( node -> arena == ptr )
+    //J:temp->type == PART deals with "double free detected"
+    if(temp->arena == ptr && temp->type == PART)
     {
-      if( node -> type == HOLE )
+      //J: Changing PART to HOLE -> freeing memory
+      temp->type = HOLE;
+
+      //J: Combining two consecutive blocks free (PREV)
+      Node *temp_prev = temp->prev;
+      if(temp_prev && temp_prev->type == HOLE)
       {
-        printf("Warning: Double free detected\n");
+        //J:[prev_hole = 0 or -1] [HOLE = new_hole + next_hole]
+        temp_prev->size = temp->size+temp_prev->size;
+
+        //J: Updating arena
+        //temp->arena = temp->arena+temp_prev->size;
+
+        temp_prev->next = temp->next;
       }
 
-      node -> type = HOLE;
+      //J: Combining two consecutive blocks free (NEXT)
+      Node *temp_next = temp->next;
+      if(temp_next && temp_next->type == HOLE)
+      {
+        // //J:[HOLE = new_hole + next_hole] [next_hole = 0 or -1]
+        temp->size = temp->size+temp_next->size;
 
+        //J: Updating arena
+        // temp->arena = temp->arena+temp_prev->size;      
+
+        temp->next = temp_next->next;
+      }      
       break;
     }
-    node = node -> next;
+    //J: Searching though list to find similar ptr
+    temp = temp->next;
   }
-
-  node = head;
-
-  while( node )
-  {
-    if( node -> next && node -> type == HOLE && node -> next -> type == HOLE  )
-    {
-      struct Node * previous = node -> next;
-      node -> size = node -> size + node -> next -> size;
-      node -> next = node -> next -> next;
-      free( previous );
-      continue;
-    }
-    node = node -> next;
-  }
-
   return;
 }
 
