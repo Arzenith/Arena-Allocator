@@ -145,6 +145,12 @@ void * mavalloc_alloc( size_t size )
     //P: Set temp's address to the largest_hole's address
     temp = smallest_hole;
 
+    if(requested_size > smallest_size)
+    {
+      printf("Couldn't find a spot to fit the request in... Request cannot be met.\n");
+      return NULL;
+    }
+
     //P: If the requested size is the same exact size as the largest size, there's no need to make a new node, make the HOLE a PART
     if(requested_size == smallest_size)
     {
@@ -184,6 +190,12 @@ void * mavalloc_alloc( size_t size )
     //P: Set temp's address to the largest_hole's address
     temp = largest_hole;
 
+    if(requested_size > largest_size)
+    {
+      printf("Couldn't find a spot to fit the request in... Request cannot be met.\n");
+      return NULL;
+    }
+
     //P: If the requested size is the same exact size as the largest size, there's no need to make a new node, make the HOLE a PART
     if(requested_size == largest_size)
     {
@@ -209,7 +221,7 @@ void * mavalloc_alloc( size_t size )
 
   //P: COULDN'T FIND SPOT, NO SPACE
   printf("Couldn't find a spot to fit the request in... Request cannot be met.\n");
-  return NULL;  
+  return NULL;
 }
 
 //J: Frees the memory block pointed by pointer back to preallocated memory arena
@@ -239,7 +251,7 @@ void mavalloc_free( void * ptr )
   {
     if( node -> next && node -> type == HOLE && node -> next -> type == HOLE  )
     {
-      struct Node * previous = node -> next;
+      Node * previous = node -> next;
       node -> size = node -> size + node -> next -> size;
       node -> next = node -> next -> next;
       free( previous );
