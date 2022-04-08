@@ -647,7 +647,6 @@ int tinytest_setup(const char *pName)
 }
 
 
-
 int tinytest_teardown(const char *pName)
 {
     fprintf( stderr, "tinytest_teardown(%s)\n", pName);
@@ -660,7 +659,7 @@ TINYTEST_START_SUITE(MavAllocTestSuite);
   TINYTEST_ADD_TEST(test_case_2,tinytest_setup,tinytest_teardown);
   TINYTEST_ADD_TEST(test_case_3,tinytest_setup,tinytest_teardown);
   TINYTEST_ADD_TEST(test_case_4,tinytest_setup,tinytest_teardown);
-  // TINYTEST_ADD_TEST(test_case_5,tinytest_setup,tinytest_teardown);
+  TINYTEST_ADD_TEST(test_case_5,tinytest_setup,tinytest_teardown);
   TINYTEST_ADD_TEST(test_case_6,tinytest_setup,tinytest_teardown);
   TINYTEST_ADD_TEST(test_case_7,tinytest_setup,tinytest_teardown);
   TINYTEST_ADD_TEST(test_case_8,tinytest_setup,tinytest_teardown);
@@ -672,7 +671,7 @@ TINYTEST_START_SUITE(MavAllocTestSuite);
   // TINYTEST_ADD_TEST(test_case_14,tinytest_setup,tinytest_teardown);
   // TINYTEST_ADD_TEST(test_case_15,tinytest_setup,tinytest_teardown);
   // TINYTEST_ADD_TEST(test_case_16,tinytest_setup,tinytest_teardown);
-  // TINYTEST_ADD_TEST(test_case_17,tinytest_setup,tinytest_teardown);
+  TINYTEST_ADD_TEST(test_case_17,tinytest_setup,tinytest_teardown);
   // TINYTEST_ADD_TEST(test_case_18,tinytest_setup,tinytest_teardown);
   // TINYTEST_ADD_TEST(test_case_19,tinytest_setup,tinytest_teardown);
   TINYTEST_ADD_TEST(test_case_20,tinytest_setup,tinytest_teardown);

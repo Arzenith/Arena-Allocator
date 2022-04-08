@@ -36,6 +36,7 @@ int mavalloc_init( size_t size, enum ALGORITHM algorithm )
 
   //P: Setting global algorithm
   algorithm_g = algorithm;
+  previous = head;
 
   return 0;
 }
@@ -52,7 +53,7 @@ void mavalloc_destroy( )
     temp = next_node;
   }
   head = NULL;
-
+  
   return;
 }
 
@@ -76,12 +77,16 @@ void * mavalloc_alloc( size_t size )
         //P: Make the original HOLE a PART with the size requested
         temp->size = requested_size;
         temp->type = PART;
+
+        previous = memory_left_over;
         return (void *) memory_left_over->arena;
       }
       //P: If requested size is the exact same size as the hole, make the HOLE a PART
       if(temp->size == requested_size)
       {
         temp->type = PART;
+
+        previous = temp;
         return (void *) temp->arena;
       }
       temp = temp->next;
@@ -94,35 +99,36 @@ void * mavalloc_alloc( size_t size )
       previous = head;
 
     //J: Assuming there was a left of part
-    Node *temp_ptr = previous;
-    while(temp_ptr)
+    temp = previous;
+    while(temp != NULL)
     {
       //J: Similar to FIRST_FIT Excepts starts at PART left off
-      if(temp_ptr->size > requested_size && temp_ptr->type == HOLE)
+      if(temp->size > requested_size && temp->type == HOLE)
       {
-        temp = temp_ptr;
         Node *memory_left_over = insert_node_after(temp,temp->size - requested_size,HOLE);
         temp->size = requested_size;
         temp->type = PART;
 
-        return (void *) temp_ptr->arena;
-      }
-
-      //J: If pointer allocator is the same size as the HOLE
-      if(temp_ptr->size == requested_size && temp_ptr->type == HOLE)
-      {
-        temp = temp_ptr;
-        temp->type = PART;
+        previous = temp;
         return (void *) temp->arena;
       }
 
-      temp_ptr = temp_ptr->next;
-      //J: Coming back to where we started
-      if(temp_ptr == previous)
+      //J: If pointer allocator is the same size as the HOLE
+      if(temp->size == requested_size && temp->type == HOLE)
+      {
+        temp->type = PART;
+
+        previous = temp;
+        return (void *) temp->arena;
+      }
+
+      temp = temp->next;
+      //J: Gone through whole array
+      if(temp == previous)
         break;
-      //J: We have reached the head
-      if(temp_ptr == NULL)
-        temp_ptr = head;
+      //J: We have reached the head, starting from the beginning
+      if(temp == NULL)
+        temp = head;
     }
   }
   else if(algorithm_g == BEST_FIT)
@@ -155,7 +161,8 @@ void * mavalloc_alloc( size_t size )
     if(requested_size == smallest_size)
     {
       temp->type = PART;
-      print_dll();
+      //print_dll();
+      previous = temp;
       return (void *) temp->arena;
     }
 
@@ -166,7 +173,9 @@ void * mavalloc_alloc( size_t size )
     temp->size = requested_size;
     temp->type = PART;
 
-    print_dll();
+    //print_dll();
+
+    previous = temp;
     return (void *) temp->arena;
   }
   else if(algorithm_g == WORST_FIT)
@@ -200,7 +209,8 @@ void * mavalloc_alloc( size_t size )
     if(requested_size == largest_size)
     {
       temp->type = PART;
-      print_dll();
+      //print_dll();
+      previous = temp;
       return (void *) temp->arena;
     }
 
@@ -211,7 +221,8 @@ void * mavalloc_alloc( size_t size )
     temp->size = requested_size;
     temp->type = PART;
 
-    print_dll();
+    //print_dll();
+    previous = temp;
     return (void *) temp->arena;
   }
   else
@@ -239,7 +250,6 @@ void mavalloc_free( void * ptr )
       }
 
       node -> type = HOLE;
-
       break;
     }
     node = node -> next;
