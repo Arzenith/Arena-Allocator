@@ -63,6 +63,12 @@ void * mavalloc_alloc( size_t size )
 {
   size_t requested_size = ALIGN4(size);
 
+  if(head == NULL)
+  {
+    printf("\nNo arena allocated. mavalloc_alloc() cannot be called\n");
+    return NULL;
+  }
+
   if(algorithm_g == FIRST_FIT)
   {
     temp = head;
@@ -153,7 +159,7 @@ void * mavalloc_alloc( size_t size )
 
     if(requested_size > smallest_size)
     {
-      printf("Couldn't find a spot to fit the request in... Request cannot be met.\n");
+      printf("\nCouldn't find a spot to fit the request in... Request cannot be met.\n");
       return NULL;
     }
 
@@ -201,7 +207,7 @@ void * mavalloc_alloc( size_t size )
 
     if(requested_size > largest_size)
     {
-      printf("Couldn't find a spot to fit the request in... Request cannot be met.\n");
+      printf("\nCouldn't find a spot to fit the request in... Request cannot be met.\n");
       return NULL;
     }
 
@@ -231,7 +237,7 @@ void * mavalloc_alloc( size_t size )
   }
 
   //P: COULDN'T FIND SPOT, NO SPACE
-  printf("Couldn't find a spot to fit the request in... Request cannot be met.\n");
+  printf("\nCouldn't find a spot to fit the request in... Request cannot be met.\n");
   return NULL;
 }
 
