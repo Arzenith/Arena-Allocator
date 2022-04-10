@@ -85,7 +85,7 @@ void * mavalloc_alloc( size_t size )
         temp->type = PART;
 
         previous = memory_left_over;
-        return (void *) memory_left_over->arena;
+        return (void *) temp->arena;
       }
       //P: If requested size is the exact same size as the hole, make the HOLE a PART
       if(temp->size == requested_size)
@@ -167,7 +167,6 @@ void * mavalloc_alloc( size_t size )
     if(requested_size == smallest_size)
     {
       temp->type = PART;
-      //print_dll();
       previous = temp;
       return (void *) temp->arena;
     }
@@ -178,8 +177,6 @@ void * mavalloc_alloc( size_t size )
     //P: Make the original HOLE a PART with the size requested
     temp->size = requested_size;
     temp->type = PART;
-
-    //print_dll();
 
     previous = temp;
     return (void *) temp->arena;
@@ -215,7 +212,6 @@ void * mavalloc_alloc( size_t size )
     if(requested_size == largest_size)
     {
       temp->type = PART;
-      //print_dll();
       previous = temp;
       return (void *) temp->arena;
     }
@@ -227,7 +223,6 @@ void * mavalloc_alloc( size_t size )
     temp->size = requested_size;
     temp->type = PART;
 
-    //print_dll();
     previous = temp;
     return (void *) temp->arena;
   }
@@ -246,6 +241,7 @@ void * mavalloc_alloc( size_t size )
 void mavalloc_free( void * ptr )
 {
   Node * node = head;
+  //P: Loop through DLL until pointers match
   while( node )
   {
     if( node -> arena == ptr )
@@ -255,14 +251,17 @@ void mavalloc_free( void * ptr )
         printf("Warning: Double free detected\n");
       }
 
+      //P: Change node to hole
       node -> type = HOLE;
       break;
     }
     node = node -> next;
   }
 
+  //P: Reset node back to head
   node = head;
 
+  //P: "Coalesce" node's surrounding desired hole
   while( node )
   {
     if( node -> next && node -> type == HOLE && node -> next -> type == HOLE  )
