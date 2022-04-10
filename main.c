@@ -567,7 +567,6 @@ int test_case_18()
   // If you failed here your allocation on line 559 failed
   TINYTEST_ASSERT( ptr2 ); 
 
-  printf("\nFREEING\n");
   mavalloc_free( ptr2 );
   
   char * ptr3 = ( char * ) mavalloc_alloc ( 256 );

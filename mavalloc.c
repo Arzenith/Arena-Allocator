@@ -43,7 +43,7 @@ int mavalloc_init( size_t size, enum ALGORITHM algorithm )
 
 void mavalloc_destroy( )
 {
-  //P: freeing a DLL implementation
+  //P: Freeing a DLL implementation
   Node *temp = head;
   Node *next_node = NULL;
   while(temp != NULL)
@@ -65,7 +65,7 @@ void * mavalloc_alloc( size_t size )
 
   if(head == NULL)
   {
-    printf("\nNo arena allocated. mavalloc_alloc() cannot be called\n");
+    // printf("\nNo arena allocated. mavalloc_alloc() cannot be called\n");
     return NULL;
   }
 
@@ -159,7 +159,7 @@ void * mavalloc_alloc( size_t size )
 
     if(requested_size > smallest_size)
     {
-      printf("\nCouldn't find a spot to fit the request in... Request cannot be met.\n");
+      // printf("\nCouldn't find a spot to fit the request in... Request cannot be met.\n");
       return NULL;
     }
 
@@ -204,7 +204,7 @@ void * mavalloc_alloc( size_t size )
 
     if(requested_size > largest_size)
     {
-      printf("\nCouldn't find a spot to fit the request in... Request cannot be met.\n");
+      // printf("\nCouldn't find a spot to fit the request in... Request cannot be met.\n");
       return NULL;
     }
 
@@ -228,11 +228,11 @@ void * mavalloc_alloc( size_t size )
   }
   else
   {
-    printf("The code should not print this... Something went wrong with the algorithm enum.\n");
+    // printf("The code should not print this... Something went wrong with the algorithm enum.\n");
   }
 
   //P: COULDN'T FIND SPOT, NO SPACE
-  printf("\nCouldn't find a spot to fit the request in... Request cannot be met.\n");
+  // printf("\nCouldn't find a spot to fit the request in... Request cannot be met.\n");
   return NULL;
 }
 
