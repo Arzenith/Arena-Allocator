@@ -12,6 +12,11 @@ Node *previous = NULL;
 void *arena;
 enum ALGORITHM algorithm_g;
 
+void *first_fit(size_t);
+void *next_fit(size_t);
+void *best_fit(size_t);
+void *worst_fit(size_t);
+
 //J: [size] - large memory pool allocation on application startup
 //J: [ALGORITHM] - First Fit, Best Fit, Worst Fit, Next Fit
 int mavalloc_init( size_t size, enum ALGORITHM algorithm )
@@ -71,160 +76,19 @@ void * mavalloc_alloc( size_t size )
 
   if(algorithm_g == FIRST_FIT)
   {
-    temp = head;
-    while(temp)
-    {
-      //P: If request is smaller than the size of a hole...
-      if(temp->size > requested_size && temp->type == HOLE)
-      {
-        //P: Make a HOLE after temp with a size of the remaining memory
-        Node *memory_left_over = insert_node_after(temp, temp->size - requested_size, HOLE);
-
-        //P: Make the original HOLE a PART with the size requested
-        temp->size = requested_size;
-        temp->type = PART;
-
-        previous = memory_left_over;
-        return (void *) temp->arena;
-      }
-      //P: If requested size is the exact same size as the hole, make the HOLE a PART
-      if(temp->size == requested_size)
-      {
-        temp->type = PART;
-
-        previous = temp;
-        return (void *) temp->arena;
-      }
-      temp = temp->next;
-    }
+    return first_fit(requested_size);
   }
   else if(algorithm_g == NEXT_FIT)
   {
-    //J: Start from head if there is no next pointer left off
-    if(previous == NULL)
-      previous = head;
-
-    //J: Assuming there was a left of part
-    temp = previous;
-    while(temp != NULL)
-    {
-      //J: Similar to FIRST_FIT Excepts starts at PART left off
-      if(temp->size > requested_size && temp->type == HOLE)
-      {
-        Node *memory_left_over = insert_node_after(temp,temp->size - requested_size,HOLE);
-        temp->size = requested_size;
-        temp->type = PART;
-
-        previous = temp;
-        return (void *) temp->arena;
-      }
-
-      //J: If pointer allocator is the same size as the HOLE
-      if(temp->size == requested_size && temp->type == HOLE)
-      {
-        temp->type = PART;
-
-        previous = temp;
-        return (void *) temp->arena;
-      }
-
-      temp = temp->next;
-      //J: Gone through whole array
-      if(temp == previous)
-        break;
-      //J: We have reached the head, starting from the beginning
-      if(temp == NULL)
-        temp = head;
-    }
+    return next_fit(requested_size);
   }
   else if(algorithm_g == BEST_FIT)
   {
-    Node *smallest_hole;
-    size_t smallest_size = INT_MAX;
-    
-    temp = head;
-    while(temp != NULL)
-    {
-      //P: If temp has a bigger size than the largest_hole we've seen so far, update largest_hole 
-      if(temp->type == HOLE && temp->size <= smallest_size)
-      {
-        smallest_size = temp->size;
-        smallest_hole = temp;
-      }
-      temp = temp->next;
-    }
-
-    //P: Set temp's address to the largest_hole's address
-    temp = smallest_hole;
-
-    if(requested_size > smallest_size)
-    {
-      // printf("\nCouldn't find a spot to fit the request in... Request cannot be met.\n");
-      return NULL;
-    }
-
-    //P: If the requested size is the same exact size as the largest size, there's no need to make a new node, make the HOLE a PART
-    if(requested_size == smallest_size)
-    {
-      temp->type = PART;
-      previous = temp;
-      return (void *) temp->arena;
-    }
-
-    //P: Make a HOLE after temp with a size of the remaining memory
-    Node *memory_left_over = insert_node_after(temp, temp->size - requested_size, HOLE);
-
-    //P: Make the original HOLE a PART with the size requested
-    temp->size = requested_size;
-    temp->type = PART;
-
-    previous = temp;
-    return (void *) temp->arena;
+    return best_fit(requested_size);
   }
   else if(algorithm_g == WORST_FIT)
   {
-    //P: Make another temp variable to hold the locatation of the biggest hole and the biggest size
-    Node *largest_hole;
-    size_t largest_size = 0;
-    
-    temp = head;
-    while(temp != NULL)
-    {
-      //P: If temp has a bigger size than the largest_hole we've seen so far, update largest_hole 
-      if(temp->type == HOLE && temp->size >= largest_size)
-      {
-        largest_size = temp->size;
-        largest_hole = temp;
-      }
-      temp = temp->next;
-    }
-
-    //P: Set temp's address to the largest_hole's address
-    temp = largest_hole;
-
-    if(requested_size > largest_size)
-    {
-      // printf("\nCouldn't find a spot to fit the request in... Request cannot be met.\n");
-      return NULL;
-    }
-
-    //P: If the requested size is the same exact size as the largest size, there's no need to make a new node, make the HOLE a PART
-    if(requested_size == largest_size)
-    {
-      temp->type = PART;
-      previous = temp;
-      return (void *) temp->arena;
-    }
-
-    //P: Make a HOLE after temp with a size of the remaining memory
-    Node *memory_left_over = insert_node_after(temp, temp->size - requested_size, HOLE);
-
-    //P: Make the original HOLE a PART with the size requested
-    temp->size = requested_size;
-    temp->type = PART;
-
-    previous = temp;
-    return (void *) temp->arena;
+    return worst_fit(requested_size);
   }
   else
   {
@@ -336,4 +200,165 @@ void print_dll()
     temp = temp->next;
   }
   printf("NULL\n\n");
+}
+
+void *first_fit(size_t requested_size)
+{
+  temp = head;
+  while(temp)
+  {
+    //P: If request is smaller than the size of a hole...
+    if(temp->size > requested_size && temp->type == HOLE)
+    {
+      //P: Make a HOLE after temp with a size of the remaining memory
+      Node *memory_left_over = insert_node_after(temp, temp->size - requested_size, HOLE);
+
+      //P: Make the original HOLE a PART with the size requested
+      temp->size = requested_size;
+      temp->type = PART;
+
+      previous = memory_left_over;
+      return (void *) temp->arena;
+    }
+    //P: If requested size is the exact same size as the hole, make the HOLE a PART
+    if(temp->size == requested_size)
+    {
+      temp->type = PART;
+
+      previous = temp;
+      return (void *) temp->arena;
+    }
+    temp = temp->next;
+  }
+}
+
+void *next_fit(size_t requested_size)
+{
+  //J: Start from head if there is no next pointer left off
+  if(previous == NULL)
+    previous = head;
+
+  //J: Assuming there was a left of part
+  temp = previous;
+  while(temp != NULL)
+  {
+    //J: Similar to FIRST_FIT Excepts starts at PART left off
+    if(temp->size > requested_size && temp->type == HOLE)
+    {
+      Node *memory_left_over = insert_node_after(temp,temp->size - requested_size,HOLE);
+      temp->size = requested_size;
+      temp->type = PART;
+
+      previous = temp;
+      return (void *) temp->arena;
+    }
+
+    //J: If pointer allocator is the same size as the HOLE
+    if(temp->size == requested_size && temp->type == HOLE)
+    {
+      temp->type = PART;
+
+      previous = temp;
+      return (void *) temp->arena;
+    }
+
+    temp = temp->next;
+    //J: Gone through whole array
+    if(temp == previous)
+      break;
+    //J: We have reached the head, starting from the beginning
+    if(temp == NULL)
+      temp = head;
+  }
+}
+
+void *best_fit(size_t requested_size)
+{
+  Node *smallest_hole;
+  size_t smallest_size = INT_MAX;
+  
+  temp = head;
+  while(temp != NULL)
+  {
+    //P: If temp has a bigger size than the largest_hole we've seen so far, update largest_hole 
+    if(temp->type == HOLE && temp->size <= smallest_size)
+    {
+      smallest_size = temp->size;
+      smallest_hole = temp;
+    }
+    temp = temp->next;
+  }
+
+  //P: Set temp's address to the largest_hole's address
+  temp = smallest_hole;
+
+  if(requested_size > smallest_size)
+  {
+    // printf("\nCouldn't find a spot to fit the request in... Request cannot be met.\n");
+    return NULL;
+  }
+
+  //P: If the requested size is the same exact size as the largest size, there's no need to make a new node, make the HOLE a PART
+  if(requested_size == smallest_size)
+  {
+    temp->type = PART;
+    previous = temp;
+    return (void *) temp->arena;
+  }
+
+  //P: Make a HOLE after temp with a size of the remaining memory
+  Node *memory_left_over = insert_node_after(temp, temp->size - requested_size, HOLE);
+
+  //P: Make the original HOLE a PART with the size requested
+  temp->size = requested_size;
+  temp->type = PART;
+
+  previous = temp;
+  return (void *) temp->arena;
+}
+
+void *worst_fit(size_t requested_size)
+{
+  //P: Make another temp variable to hold the locatation of the biggest hole and the biggest size
+  Node *largest_hole;
+  size_t largest_size = 0;
+  
+  temp = head;
+  while(temp != NULL)
+  {
+    //P: If temp has a bigger size than the largest_hole we've seen so far, update largest_hole 
+    if(temp->type == HOLE && temp->size >= largest_size)
+    {
+      largest_size = temp->size;
+      largest_hole = temp;
+    }
+    temp = temp->next;
+  }
+
+  //P: Set temp's address to the largest_hole's address
+  temp = largest_hole;
+
+  if(requested_size > largest_size)
+  {
+    // printf("\nCouldn't find a spot to fit the request in... Request cannot be met.\n");
+    return NULL;
+  }
+
+  //P: If the requested size is the same exact size as the largest size, there's no need to make a new node, make the HOLE a PART
+  if(requested_size == largest_size)
+  {
+    temp->type = PART;
+    previous = temp;
+    return (void *) temp->arena;
+  }
+
+  //P: Make a HOLE after temp with a size of the remaining memory
+  Node *memory_left_over = insert_node_after(temp, temp->size - requested_size, HOLE);
+
+  //P: Make the original HOLE a PART with the size requested
+  temp->size = requested_size;
+  temp->type = PART;
+
+  previous = temp;
+  return (void *) temp->arena;
 }
